@@ -15,8 +15,8 @@ $message = $text1 . $text2 . $text3;
 
 echo $message;
 
-$headers = "From: your_email@gmail.com";
+$headers = "From: samokhatkakarina@gmail.com";
 
-mail("receiver_email@gmail.com", $subject, $message, $headers);
+mail("samokhatkakarina@gmail.com", $subject, $message, $headers);
 
 ?>
