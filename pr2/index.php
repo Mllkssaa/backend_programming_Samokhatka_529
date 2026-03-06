@@ -1,42 +1,37 @@
 <?php
 
-$apiKey = "AIzaSyAdmBPO5iy6Gbk36GjmKKY6DMGGF3UpMQM";
-$cx = "b1db9aafae126408c";
+$apiKey = "103c497f15b8437782db1f5aa7620d6327a1f6af";
 $items = [];
 
 if (isset($_GET['search']) && !empty($_GET['search'])) {
 
-    $search = urlencode($_GET['search']);
-    $url = "https://www.googleapis.com/customsearch/v1?key=$apiKey&cx=$cx&q=$search";
+    $search = $_GET['search'];
+
+    $data = json_encode([
+        "q" => $search
+    ]);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
+
+    curl_setopt($ch, CURLOPT_URL, "https://google.serper.dev/search");
+    curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-    $resultJson = curl_exec($ch);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "X-API-KEY: $apiKey",
+        "Content-Type: application/json"
+    ]);
+
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+
+    $result = curl_exec($ch);
     curl_close($ch);
 
-    // === Виводимо весь JSON для відладки ===
-    echo "<h3>Raw API Response:</h3>";
-    echo "<pre>";
-    print_r($resultJson);
-    echo "</pre>";
 
-    $data = json_decode($resultJson, true);
+    $response = json_decode($result, true);
 
-    // Перевірка на помилку
-    if (isset($data['error'])) {
-        echo "<h3>API Error:</h3>";
-        echo "<pre>";
-        print_r($data['error']);
-        echo "</pre>";
-    }
-
-    // Якщо є результати
-    if (isset($data['items'])) {
-        $items = $data['items'];
-    } else {
-        echo "<p>No results found.</p>";
+    if (isset($response['organic'])) {
+        $items = $response['organic'];
     }
 }
 
@@ -53,9 +48,9 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
 
 <h2>My Browser</h2>
 
-<form method="GET" action="index.php">
+<form method="GET">
 <label>Search:</label>
-<input type="text" name="search" value="<?php if(isset($_GET['search'])) echo htmlspecialchars($_GET['search']); ?>">
+<input type="text" name="search">
 <input type="submit" value="Search">
 </form>
 
@@ -67,6 +62,7 @@ foreach ($items as $item) {
     echo "<h3><a href='".$item['link']."' target='_blank'>".$item['title']."</a></h3>";
     echo "<p>".$item['snippet']. "</p>";
 }
+
 ?>
 
 </body>
